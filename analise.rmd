@@ -14,15 +14,42 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r cars}
-summary(cars)
+summary(saida)
 ```
+summary(saida)
 
-## Including Plots
+library(dplyr)
+library(sqldf)
 
+
+getwd()
+
+library(RSQLite)
+
+con <- dbConnect(RSQLite::SQLite(), dbname = "desafio-tecnico.db")
+con
+dbListTables(con)
 You can also embed plots, for example:
 
 ```{r pressure, echo=FALSE}
-plot(pressure)
+
+
+saida=dbGetQuery(con, "SELECT    P.id,    P.account_number,     P.status FROM    charges  P WHERE    P.id IN
+                 (        SELECT    C.id        FROM            accounts   C        WHERE
+                 P.id = C.id
+                 );")
+  
+saida
+
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r saidas}
+
+saida$fraud[saida$status== "unpaid"] <- 1
+
+saida$fraud[saida$status== "paid"] <- 0
+
+write.csv(saida,"D://sqlite//ResultadoCorretocsv.csv", row.names = FALSE)
+```
